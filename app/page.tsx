@@ -1,65 +1,105 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import { PhoneMockup } from "@/components/PhoneMockup";
+import { MobileUI } from "@/components/MobileUI";
 
 export default function Home() {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      // Switch to mockup as soon as the screen is wider than a phone (~500px)
+      const mobile = window.innerWidth <= 500;
+      setIsMobile(mobile);
+
+      if (!mobile) {
+        // galaxy s25 ultra dimensions
+        const mockupWidth = 400;
+        const mockupHeight = 880;
+        const padding = 60; // minimum padding around the phone
+
+        const availableWidth = window.innerWidth - padding;
+        const availableHeight = window.innerHeight - padding;
+
+        const widthScale = availableWidth / mockupWidth;
+        const heightScale = availableHeight / mockupHeight;
+
+        // Use the smaller scale to ensure it fits both width and height
+        const newScale = Math.min(1, widthScale, heightScale);
+        setScale(newScale);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Avoid hydration mismatch
+  if (isMobile === null) return <div className="min-h-screen bg-black" />;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-zinc-950 overflow-hidden">
+      {isMobile ? (
+        /* Mobile View: Direct UI */
+        <div className="h-[100dvh] w-full relative bg-zinc-950">
+          <MobileUI isMobile={isMobile} />
+          <div className="absolute bottom-2 w-full text-center z-50">
+            <p className="text-[9px] text-white font-medium tracking-widest uppercase drop-shadow-sm">
+              © 2026 Softwala • Crafted with Passion
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      ) : (
+        /* Desktop View: Mockup */
+        <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-black">
+          {/* Dot-Grid Background Pattern */}
+          <div
+            className={cn(
+              "absolute inset-0",
+              "[background-size:20px_20px]",
+              "[background-image:radial-gradient(#404040_1px,transparent_1px)]"
+            )}
+          />
+
+          {/* Radial mask for spotlight effect */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] z-10"></div>
+
+          {/* Full Viewport Logo Background - Desktop Only */}
+          <div className="absolute inset-0 flex items-center justify-center p-12 opacity-[0.4] pointer-events-none select-none z-[15]">
+            <img
+              src="/logo.svg"
+              alt=""
+              className="w-full h-full object-contain filter grayscale"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+
+          <div
+            className="z-20 transition-transform duration-300 ease-out will-change-transform"
+            style={{ transform: `scale(${scale})` }}
           >
-            Documentation
-          </a>
+            <div
+              className="animate-in fade-in slide-in-from-bottom-32 duration-[2500ms] ease-out fill-mode-backwards"
+              style={{ animationDelay: '800ms' }}
+            >
+              <PhoneMockup>
+                <MobileUI isMobile={false} />
+              </PhoneMockup>
+            </div>
+          </div>
+
+          {/* Copyright & Logo for Desktop - Positioned at the bottom right */}
+          <div className="absolute bottom-2 right-4 z-20 flex flex-col items-end gap-1.5 backdrop-blur-sm px-2 py-1 rounded-lg">
+            <img src="/logo.svg" alt="Softwala" className="w-auto" />
+            <p className="text-[9px] text-white/50 font-medium tracking-widest uppercase drop-shadow-sm border-t border-white/10 pt-1">
+              © 2026 Softwala • Crafted with Passion
+            </p>
+          </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }
