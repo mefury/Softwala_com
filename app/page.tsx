@@ -98,6 +98,14 @@ export default function Home() {
               © 2026 Softwala • Crafted with Passion
             </p>
           </div>
+
+          {/* Legal Links - Positioned at the bottom left */}
+          <div className="absolute bottom-2 left-4 z-20 flex flex-col items-start gap-1.5 backdrop-blur-sm px-2 py-1 rounded-lg">
+            <div className="flex gap-4 text-[10px] text-white/60 font-medium tracking-wider uppercase">
+              <a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="/terms-conditions" className="hover:text-white transition-colors">Terms & Conditions</a>
+            </div>
+          </div>
         </div>
       )}
     </div>
